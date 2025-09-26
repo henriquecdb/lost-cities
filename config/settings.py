@@ -137,12 +137,6 @@ class DebugConfig:
 
 
 def get_slot_positions() -> list:
-    """
-    Calcula e retorna as posições dos slots baseado nas configurações.
-
-    Returns:
-        list: Lista de tuplas (x, y) para posição de cada slot
-    """
     colors = Colors.get_available_colors()
     num_slots = len(colors)
 
@@ -160,15 +154,6 @@ def get_slot_positions() -> list:
 
 
 def get_hand_positions(player: int = 1) -> list:
-    """
-    Calcula e retorna as posições das cartas na mão baseado nas configurações.
-
-    Args:
-        player: 1 para jogador 1 (embaixo), 2 para jogador 2 (em cima)
-
-    Returns:
-        list: Lista de tuplas (x, y) para posição de cada carta na mão
-    """
     positions = []
     total_width = CardConfig.HAND_SIZE * \
         (CardConfig.HAND_CARD_WIDTH + CardConfig.HAND_CARD_SPACING) - \
