@@ -25,19 +25,15 @@ class GameManager:
         self.deck_manager = DeckManager()
         self.turn_manager = TurnManager()
 
-        # Estado do jogo
         self.rodando = True
         self.slots_jogador1: List[SlotCarta] = []
         self.slots_jogador2: List[SlotCarta] = []
 
-        # Slots compartilhados
         self.slots: List[SlotCarta] = []
 
-        # Mãos dos jogadores
         self.cartas_mao_jogador1: List[Carta] = []
         self.cartas_mao_jogador2: List[Carta] = []
 
-        # Estado de arraste
         self.carta_sendo_arrastada: Optional[Carta] = None
         self.posicao_original: Optional[Tuple[int, int]] = None
         self.jogador_carta_arrastada: Optional[int] = None
@@ -62,15 +58,12 @@ class GameManager:
         for i, cor in enumerate(cores_disponiveis):
             x, y = posicoes_slots[i]
 
-            # Slot principal (jogador 1 - compartilhado para compatibilidade)
             slot = SlotCarta(x, y, cor)
             self.slots.append(slot)
 
-            # Slot do jogador 1 (mesmo que o principal por enquanto)
             slot_j1 = SlotCarta(x, y, cor)
             self.slots_jogador1.append(slot_j1)
 
-            # Slot do jogador 2 (separado para pontuação independente)
             slot_j2 = SlotCarta(x, y, cor)
             self.slots_jogador2.append(slot_j2)
 
@@ -99,7 +92,7 @@ class GameManager:
                 carta.mover_para(x, y)
 
     def _get_mao_jogador_atual(self) -> List[Carta]:
-        if self.turn_manager.get_jogador_atual() == 1:  # testar com ternario dps
+        if self.turn_manager.get_jogador_atual() == 1:
             return self.cartas_mao_jogador1
         else:
             return self.cartas_mao_jogador2
@@ -186,7 +179,8 @@ class GameManager:
 
         if self.turn_manager.validar_jogada_em_expedicao(self.carta_sendo_arrastada, slot_jogador):
             if slot_jogador.adicionar_carta(self.carta_sendo_arrastada):
-                slot.adicionar_carta(self.carta_sendo_arrastada)
+                jogador_atual = self.turn_manager.get_jogador_atual()
+                slot.adicionar_carta(self.carta_sendo_arrastada, jogador_atual)
 
                 mao_atual = self._get_mao_jogador_atual()
                 if self.carta_sendo_arrastada in mao_atual:

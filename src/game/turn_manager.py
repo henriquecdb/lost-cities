@@ -35,24 +35,7 @@ class TurnManager:
                 not self.jogo_terminado)
 
     def validar_jogada_em_expedicao(self, carta: Carta, slot: SlotCarta) -> bool:
-        if carta.cor != slot.cor:
-            return False
-
-        if slot.esta_vazio():
-            return True
-
-        ultima_carta = slot.get_ultima_carta()
-        if not ultima_carta:
-            return True
-
-        if carta.tipo_carta == 'numerada' and ultima_carta.tipo_carta == 'investimento':
-            return True
-        elif carta.tipo_carta == 'investimento' and ultima_carta.tipo_carta == 'numerada':
-            return False
-        elif carta.tipo_carta == 'investimento' and ultima_carta.tipo_carta == 'investimento':
-            return True
-        else:
-            return carta.numero >= ultima_carta.numero
+        return slot.pode_aceitar_carta(carta, self.jogador_atual)
 
     def registrar_carta_jogada(self, carta: Carta, tipo_jogada: str) -> bool:
         if not self.pode_jogar_carta(self.jogador_atual):

@@ -1,6 +1,4 @@
 from src.game.manager import GameFactory
-import sys
-import os
 
 
 def main():
