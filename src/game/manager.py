@@ -322,8 +322,7 @@ class GameManager:
         self.deck_manager.reset_jogo()
         self.turn_manager.reset_jogo()
 
-        for slot in self.slots:
-            slot.cartas.clear()
+        self._inicializar_slots()
 
         self._distribuir_cartas_iniciais()
 

@@ -74,7 +74,7 @@ class GameRenderer:
         cores_disponiveis = Colors.get_available_colors()
         nomes_cores = Colors.get_color_names()
 
-        for i, cor in enumerate(cores_disponiveis):
+        for _, cor in enumerate(cores_disponiveis):
             area = areas_descarte[cor]
 
             pygame.draw.rect(self.tela, cor, area)

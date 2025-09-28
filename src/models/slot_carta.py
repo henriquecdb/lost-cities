@@ -117,8 +117,12 @@ class SlotCarta:
 
         pontuacao = soma_cartas - 20
 
-        for _ in range(cartas_investimento):
+        if cartas_investimento == 1:
             pontuacao *= 2
+        elif cartas_investimento == 2:
+            pontuacao *= 3
+        elif cartas_investimento == 3:
+            pontuacao *= 4
 
         if len(self.cartas) >= 8:
             pontuacao += 20
