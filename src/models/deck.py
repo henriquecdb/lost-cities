@@ -21,7 +21,7 @@ class Deck:
                 self.cartas.append(carta)
 
         for cor in cores_disponiveis:
-            for _ in range(GameConfig.INVESTMENT_CARDS_PER_COLOR):
+            for _ in range(CardConfig.INVESTMENT_CARDS_PER_COLOR):
                 carta = Carta(numero=0, cor=cor, x=0, y=0,
                               tipo_carta='investimento')
                 self.cartas.append(carta)

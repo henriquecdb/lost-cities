@@ -110,7 +110,6 @@ class GameManager:
 
             if not self.turn_manager.pode_mover_carta(jogador_atual):
                 self.ui_manager.adicionar_mensagem_temporaria(
-                    # f"Aguarde sua vez, Jogador {jogador_atual}!")
                     f"Aguarde sua vez!")
                 return
 
@@ -131,7 +130,6 @@ class GameManager:
         if evento.button == 1 and self.carta_sendo_arrastada:
             pos_mouse = pygame.mouse.get_pos()
             carta_colocada = False
-            # jogador_atual = self.turn_manager.get_jogador_atual()
 
             slots_visuais = self.slots
             for slot in slots_visuais:

@@ -1,7 +1,7 @@
 from typing import Tuple, Dict
 
-WINDOW_WIDTH = 1200  # 1000
-WINDOW_HEIGHT = 900  # 700
+WINDOW_WIDTH = 1200
+WINDOW_HEIGHT = 900
 WINDOW_TITLE = "Lost Cities"
 FPS = 60
 
@@ -37,8 +37,6 @@ class Colors:
 
 class CardConfig:
     HAND_CARD_WIDTH = 60
-    HAND_CARD_HEIGHT = 90
-
     SLOT_CARD_WIDTH = 55
     SLOT_CARD_HEIGHT = 85
 
@@ -58,11 +56,11 @@ class SlotConfig:
 
     SLOT_SPACING = 30
 
-    SLOT_Y_POSITION = 350
+    SLOT_Y_POSITION = 340
 
 
 class LayoutConfig:
-    PLAYER1_HAND_Y = WINDOW_HEIGHT - 200  # 700
+    PLAYER1_HAND_Y = WINDOW_HEIGHT - 200
     HAND_AREA_HEIGHT = 160
     HAND_AREA_MARGIN = 30
 
@@ -76,7 +74,7 @@ class LayoutConfig:
     INSTRUCTIONS_START_Y = WINDOW_HEIGHT - 30
     HAND_TITLE_OFFSET_Y = 10
 
-    DISCARD_AREA_X = 250
+    DISCARD_AREA_X = 310
     DISCARD_AREA_Y = 550
     DISCARD_PILE_SPACING = 130
 
@@ -88,52 +86,15 @@ class FontConfig:
     INSTRUCTION_SIZE = 16
 
 
-class VisualConfig:
-    NORMAL_BORDER_WIDTH = 2
-    HIGHLIGHTED_BORDER_WIDTH = 4
-    DRAGGING_BORDER_WIDTH = 3
-
-    SHADOW_OFFSET = 3
-    SHADOW_COLOR = (100, 100, 100)
-
-    HIGHLIGHT_COLOR_OFFSET = 50
-
-
 class GameConfig:
     CARDS_PER_COLOR = 9
-    INVESTMENT_CARDS_PER_COLOR = 3
-    TOTAL_NUMBERED_CARDS = len(
-        Colors.get_available_colors()) * CARDS_PER_COLOR  # 45 cartas
+    TOTAL_NUMBERED_CARDS = len(Colors.get_available_colors()) * CARDS_PER_COLOR
     TOTAL_INVESTMENT_CARDS = len(
-        Colors.get_available_colors()) * INVESTMENT_CARDS_PER_COLOR  # 15 cartas
-    TOTAL_DECK_SIZE = TOTAL_NUMBERED_CARDS + TOTAL_INVESTMENT_CARDS  # 60 cartas
+        Colors.get_available_colors()) * CardConfig.INVESTMENT_CARDS_PER_COLOR
+    TOTAL_DECK_SIZE = TOTAL_NUMBERED_CARDS + TOTAL_INVESTMENT_CARDS
 
     NUM_PLAYERS = 2
     STARTING_HAND_SIZE = 8
-
-    # Pontuação
-    INVESTMENT_MULTIPLIER = 2  # Cada carta de investimento multiplica por 2
-    MINIMUM_EXPEDITION_COST = 20  # Custo base para começar expedição
-    BONUS_8_OR_MORE_CARDS = 20  # Bônus por 8+ cartas na expedição
-
-    REQUIRE_ASCENDING_ORDER = True  # Cartas devem ser jogadas em ordem crescente
-    ALLOW_GAPS_IN_SEQUENCE = False  # Não pode pular números
-    INVESTMENT_CARDS_FIRST = True   # Cartas de investimento devem ser jogadas primeiro
-
-
-class ControlConfig:
-    QUIT_KEY = "K_ESCAPE"
-    NEW_CARDS_KEY = "K_r"
-
-    LEFT_MOUSE_BUTTON = 1
-    RIGHT_MOUSE_BUTTON = 3
-
-
-class DebugConfig:
-    SHOW_COLLISION_BOXES = False
-    PRINT_CARD_MOVEMENTS = True
-    SHOW_FPS = False
-    LOG_GAME_EVENTS = True
 
 
 def get_slot_positions() -> list:
