@@ -40,8 +40,7 @@ class Carta:
         self.x = x
         self.y = y
 
-    def desenhar(self, tela: pygame.Surface, fonte_pequena: pygame.font.Font,
-                 slots_jogador1=None, slots_jogador2=None) -> None:
+    def desenhar(self, tela: pygame.Surface, fonte_pequena: pygame.font.Font) -> None:
         pygame.draw.rect(tela, self.cor, (self.x, self.y,
                          self.largura, self.altura))
 

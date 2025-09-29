@@ -27,8 +27,6 @@ class SlotCarta:
 
         if jogador is None:
             ultima_carta = self.get_ultima_carta()
-            if not ultima_carta:
-                return True
 
             if carta.tipo_carta == 'numerada' and ultima_carta.tipo_carta == 'investimento':
                 return True
@@ -40,27 +38,22 @@ class SlotCarta:
                 return carta.numero >= ultima_carta.numero
 
         if jogador == 1:
-            cartas_jogador_atual = self.cartas_jogador1
+            ultima_carta = self.get_ultima_carta_jogador1()
         elif jogador == 2:
-            cartas_jogador_atual = self.cartas_jogador2
+            ultima_carta = self.get_ultima_carta_jogador2()
         else:
             return False
 
-        if not cartas_jogador_atual:
+        if not ultima_carta:
             return True
-
-        # ultima_carta_jogador = cartas_jogador_atual[-1]
 
         if carta.tipo_carta == 'investimento':
-            for carta_existente in cartas_jogador_atual:
-                if carta_existente.tipo_carta == 'numerada':
-                    return False
-            return True
+            return ultima_carta.tipo_carta != 'numerada'
         elif carta.tipo_carta == 'numerada':
-            for carta_existente in reversed(cartas_jogador_atual):
-                if carta_existente.tipo_carta == 'numerada':
-                    return carta.numero >= carta_existente.numero
-            return True
+            if ultima_carta.tipo_carta == 'investimento':
+                return True
+            else:
+                return carta.numero >= ultima_carta.numero
 
         return False
 
