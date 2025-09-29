@@ -74,12 +74,3 @@ class Carta:
             pygame.draw.rect(tela, (100, 100, 100),
                              (self.x + sombra_offset, self.y + sombra_offset,
                               self.largura, self.altura))
-
-    def __str__(self) -> str:
-        if self.tipo_carta == 'investimento':
-            return f"Carta(Investimento, {self.cor})"
-        else:
-            return f"Carta({self.numero}, {self.cor})"
-
-    def __repr__(self) -> str:
-        return self.__str__()

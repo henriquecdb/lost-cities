@@ -216,16 +216,3 @@ class SlotCarta:
                 texto_rect = texto_lista_j2.get_rect(
                     center=(self.x + self.largura//2, self.y + y_offset))
                 tela.blit(texto_lista_j2, texto_rect)
-
-            # pontuacao = self.calcular_pontuacao()
-            # texto_pontos = fonte_pequena.render(
-            #     f"Pts: {pontuacao}", True, (255, 255, 255))
-            # texto_rect = texto_pontos.get_rect(
-            #     center=(self.x + self.largura//2, self.y + self.altura - 15))
-            # tela.blit(texto_pontos, texto_rect)
-
-    def __str__(self) -> str:
-        return f"SlotCarta({self.cor}, {len(self.cartas)} cartas)"
-
-    def __repr__(self) -> str:
-        return self.__str__()
