@@ -5,6 +5,8 @@ WINDOW_HEIGHT = 900
 WINDOW_TITLE = "Lost Cities"
 FPS = 60
 
+DEFAULT_RANDOM_SEED = 42
+
 
 class Colors:
     WHITE = (255, 255, 255)
