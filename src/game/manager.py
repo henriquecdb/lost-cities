@@ -35,7 +35,7 @@ class GameManager:
         turn_manager = TurnManager()
         state = GameState(deck_manager=deck_manager, turn_manager=turn_manager)
         manager = cls(state)
-        manager.start_new_game()  # manager.start_new_game(seed=41)
+        manager.start_new_game()
         return manager
 
     def start_new_game(self, seed: Optional[int] = None) -> None:
@@ -405,7 +405,7 @@ class GameApp:
             self.ui_manager.adicionar_mensagem_temporaria(
                 f'Árvore salva em {caminho.name}'
             )
-        except Exception as exc:  # pragma: no cover - feedback visual
+        except Exception as exc:
             print(f'Erro ao renderizar árvore de estados: {exc!r}')
             self.ui_manager.adicionar_mensagem_temporaria(
                 'Erro ao renderizar árvore. Verifique o console.'

@@ -1,4 +1,3 @@
-# noqa: D401 - documentação reduzida e clara o suficiente
 from __future__ import annotations
 
 from collections import deque
@@ -12,8 +11,6 @@ from src.game.state_tree import GameStateNode, GameStateTree
 
 
 def render_state_tree(tree: GameStateTree, output_path: Path | str) -> Path:
-    """Renderiza a GameStateTree com NetworkX + Matplotlib e salva em arquivo."""
-
     if tree.root is None:
         raise ValueError("Árvore de estados vazia")
 
@@ -106,7 +103,7 @@ def _node_status(tree: GameStateTree, node: GameStateNode) -> str:
 
 def _compute_layout(graph: nx.DiGraph) -> Dict[str, tuple[float, float]]:
     try:
-        from networkx.drawing.nx_pydot import graphviz_layout  # type: ignore
+        from networkx.drawing.nx_pydot import graphviz_layout
 
         return graphviz_layout(graph, prog="dot", args="-Grankdir=TB")
     except Exception:
