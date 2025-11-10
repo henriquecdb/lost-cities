@@ -18,6 +18,7 @@ def render_state_tree(tree: GameStateTree, output_path: Path | str) -> Path:
         raise ValueError("Árvore de estados vazia")
 
     graph = nx.DiGraph()
+    graph.graph['rankdir'] = 'TB'
     node_ids: Dict[int, str] = {}
 
     queue = deque([(tree.root, None, 0)])
@@ -107,9 +108,31 @@ def _compute_layout(graph: nx.DiGraph) -> Dict[str, tuple[float, float]]:
     try:
         from networkx.drawing.nx_pydot import graphviz_layout  # type: ignore
 
-        return graphviz_layout(graph, prog="dot")
+        return graphviz_layout(graph, prog="dot", args="-Grankdir=TB")
     except Exception:
-        return nx.multipartite_layout(graph, subset_key="layer", align="vertical")
+        return _fallback_vertical_layout(graph)
+
+
+def _fallback_vertical_layout(graph: nx.DiGraph) -> Dict[str, tuple[float, float]]:
+    layers: Dict[int, list[str]] = {}
+    for node, data in graph.nodes(data=True):
+        layer_value = data.get("layer", 0)
+        layer_int = int(layer_value)
+        layers.setdefault(layer_int, []).append(node)
+
+    positions: Dict[str, tuple[float, float]] = {}
+    for layer_index in sorted(layers):
+        nodes = layers[layer_index]
+        count = len(nodes)
+        if count == 1:
+            positions[nodes[0]] = (0.0, -float(layer_index))
+            continue
+        spacing = 1.6
+        offset = -0.5 * spacing * (count - 1)
+        for idx, node in enumerate(nodes):
+            positions[node] = (offset + idx * spacing, -float(layer_index))
+
+    return positions
 
 
 def _draw_nodes(graph: nx.DiGraph, pos: Dict[str, tuple[float, float]]) -> None:
