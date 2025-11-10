@@ -1,5 +1,5 @@
 import random
-from typing import List, Optional
+from typing import Dict, List, Optional
 from src.models.carta import Carta
 from config.settings import Colors, GameConfig, CardConfig
 
@@ -143,3 +143,24 @@ class DeckManager:
         self.deck = Deck(self._rng)
         for monte in self.montes_descarte.values():
             monte.cartas.clear()
+
+    def clone(self, card_map: Dict[Carta, Carta]) -> "DeckManager":
+        novo_manager = DeckManager.__new__(DeckManager)
+        novo_manager._base_seed = self._base_seed
+        novo_manager._rng = random.Random()
+        novo_manager._rng.setstate(self._rng.getstate())
+
+        novo_manager.deck = Deck.__new__(Deck)
+        novo_manager.deck._rng = novo_manager._rng
+        novo_manager.deck.cartas = [card_map[carta]
+                                    for carta in self.deck.cartas]
+
+        novo_manager.montes_descarte = {}
+        for cor, monte in self.montes_descarte.items():
+            novo_monte = DiscardPile.__new__(DiscardPile)
+            novo_monte.cor = cor
+            novo_monte.cartas = [card_map[carta]
+                                 for carta in monte.cartas]
+            novo_manager.montes_descarte[cor] = novo_monte
+
+        return novo_manager

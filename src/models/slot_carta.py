@@ -1,6 +1,6 @@
 from src.models.carta import Carta
 import pygame
-from typing import List, Tuple, Optional
+from typing import Dict, List, Tuple, Optional
 
 
 class SlotCarta:
@@ -209,3 +209,15 @@ class SlotCarta:
                 texto_rect = texto_lista_j2.get_rect(
                     center=(self.x + self.largura//2, self.y + y_offset))
                 tela.blit(texto_lista_j2, texto_rect)
+
+    def clone(self, card_map: Dict[Carta, Carta]) -> "SlotCarta":
+        novo_slot = SlotCarta(self.x, self.y, self.cor)
+        novo_slot.largura = self.largura
+        novo_slot.altura = self.altura
+        novo_slot._destacado = self._destacado
+        novo_slot.cartas = [card_map[carta] for carta in self.cartas]
+        novo_slot.cartas_jogador1 = [card_map[carta]
+                                     for carta in self.cartas_jogador1]
+        novo_slot.cartas_jogador2 = [card_map[carta]
+                                     for carta in self.cartas_jogador2]
+        return novo_slot

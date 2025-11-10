@@ -211,7 +211,7 @@ class UIManager:
             self.renderer.desenhar_estatisticas(slots_jogador1, slots_jogador2)
 
         instrucoes = [
-            "ESC: Sair | R: Novo Jogo | S: Estatísticas | D: Comprar do Deck | ESPAÇO: Avançar Fase"
+            "ESC: Sair | R: Novo Jogo | S: Estatísticas | D: Comprar do Deck | ESPAÇO: Avançar Fase | Z: Desfazer | T: Salvar Árvore"
         ]
         self.renderer.desenhar_instrucoes(instrucoes)
 

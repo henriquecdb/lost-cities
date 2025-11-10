@@ -1,5 +1,6 @@
 import pygame
-from typing import Dict, List, Optional, Tuple
+from pathlib import Path
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Tuple
 
 from config.settings import (
     Colors,
@@ -19,6 +20,9 @@ from src.models.carta import Carta
 from src.models.deck import DeckManager
 from src.models.slot_carta import SlotCarta
 from src.ui.renderer import GameRenderer, UIManager
+
+if TYPE_CHECKING:
+    from src.game.state_tree import GameStateTree, GameMove
 
 
 class GameManager:
@@ -46,6 +50,9 @@ class GameManager:
         self.state.configure_slots(colors, slot_positions)
         self._distribuir_cartas_iniciais()
         self.state.fim_jogo_processado = False
+
+    def load_state(self, new_state: GameState) -> None:
+        self.state = new_state.clone()
 
     def _distribuir_cartas_iniciais(self) -> None:
         for jogador in (1, 2):
@@ -234,8 +241,6 @@ class GameManager:
 
 
 class GameApp:
-    '''Responsável por lidar com a interface e delegar ações ao GameManager.'''
-
     def __init__(self, game_manager: GameManager):
         pygame.init()
 
@@ -259,10 +264,13 @@ class GameApp:
         self.cartas_mao_jogador1: List[Carta] = []
         self.cartas_mao_jogador2: List[Carta] = []
 
+        self.state_tree: Optional["GameStateTree"] = None
+
         self._sync_state_references()
         self._inicializar_areas_descarte()
         self._reposicionar_mao(1)
         self._reposicionar_mao(2)
+        self._init_state_tree()
 
     def _sync_state_references(self) -> None:
         self.slots = self.game_manager.get_shared_slots()
@@ -289,6 +297,120 @@ class GameApp:
                 x, y = posicoes[indice]
                 carta.mover_para(x, y)
 
+    def _init_state_tree(self) -> None:
+        from src.game.state_tree import GameStateTree
+
+        self.state_tree = GameStateTree(self.game_manager.state)
+
+    def _reset_state_tree(self) -> None:
+        self._init_state_tree()
+
+    def _advance_tree_if_matches(self, matcher: Callable[["GameMove"], bool]) -> None:
+        if not self.state_tree:
+            return
+
+        pending = self.state_tree.current.pending_moves
+        for idx, pendente in enumerate(pending):
+            if matcher(pendente.move):
+                try:
+                    self.state_tree.advance(idx)
+                except ValueError:
+                    self._reset_state_tree()
+                return
+
+        for idx, child in enumerate(self.state_tree.current.children):
+            if child.move and matcher(child.move):
+                try:
+                    self.state_tree.advance_to_child(idx)
+                except ValueError:
+                    self._reset_state_tree()
+                return
+
+        self._reset_state_tree()
+
+    def _registrar_movimento_arvore(self, tipo: str, carta: Optional[Carta] = None,
+                                    cor: Optional[Tuple[int, int, int]] = None) -> None:
+        if not self.state_tree:
+            return
+
+        nomes_cores = Colors.get_color_names()
+
+        def matcher(move: "GameMove") -> bool:
+            if move.tipo != tipo:
+                return False
+
+            if tipo == "play":
+                if not carta or cor is None:
+                    return False
+                descricao = f"Jogar {self._descricao_carta(carta)} em {nomes_cores.get(cor, '?')}"
+                return move.descricao == descricao
+
+            if tipo == "discard":
+                if not carta or cor is None:
+                    return False
+                descricao = f"Descartar {self._descricao_carta(carta)} em {nomes_cores.get(cor, '?')}"
+                return move.descricao == descricao
+
+            if tipo == "draw_deck":
+                return move.descricao == "Comprar do deck"
+
+            if tipo == "draw_discard":
+                if cor is None:
+                    return False
+                descricao = f"Comprar do descarte {nomes_cores.get(cor, '?')}"
+                return move.descricao == descricao
+
+            return False
+
+        self._advance_tree_if_matches(matcher)
+
+    @staticmethod
+    def _descricao_carta(carta: Carta) -> str:
+        return "INV" if carta.tipo_carta == "investimento" else str(carta.numero)
+
+    def _desfazer_jogada(self) -> None:
+        if not self.state_tree:
+            self.ui_manager.adicionar_mensagem_temporaria(
+                'Árvore indisponível.')
+            return
+
+        no_atual = self.state_tree.rewind()
+        if not no_atual:
+            self.ui_manager.adicionar_mensagem_temporaria(
+                'Nenhuma jogada para desfazer.')
+            return
+
+        self.game_manager.load_state(no_atual.state)
+        self._sync_state_references()
+        self._reposicionar_mao(1)
+        self._reposicionar_mao(2)
+        self.carta_sendo_arrastada = None
+        self.posicao_original = None
+        self.jogador_carta_arrastada = None
+        self.ui_manager.adicionar_mensagem_temporaria('Jogada desfeita.')
+
+    def _salvar_visualizacao_arvore(self) -> None:
+        if not self.state_tree:
+            self.ui_manager.adicionar_mensagem_temporaria(
+                'Árvore indisponível.')
+            return
+
+        try:
+            from src.game.state_tree_visualizer import render_state_tree
+
+            base_dir = Path(__file__).resolve().parents[2]
+            destino = base_dir / 'files' / 'state_tree.png'
+            destino.parent.mkdir(parents=True, exist_ok=True)
+            caminho = render_state_tree(self.state_tree, destino)
+            self.ui_manager.adicionar_mensagem_temporaria(
+                f'Árvore salva em {caminho.name}'
+            )
+        except Exception as exc:  # pragma: no cover - feedback visual
+            print(f'Erro ao renderizar árvore de estados: {exc!r}')
+            self.ui_manager.adicionar_mensagem_temporaria(
+                'Erro ao renderizar árvore. Verifique o console.'
+            )
+
     def _novo_jogo(self, seed: Optional[int] = None) -> None:
         self.game_manager.start_new_game(seed=seed)
         self._sync_state_references()
@@ -297,6 +419,7 @@ class GameApp:
         self.carta_sendo_arrastada = None
         self.posicao_original = None
         self.jogador_carta_arrastada = None
+        self._init_state_tree()
         self.ui_manager.adicionar_mensagem_temporaria('Novo jogo iniciado!')
 
     def _processar_evento_mouse_down(self, evento: pygame.event.Event) -> None:
@@ -348,6 +471,11 @@ class GameApp:
                     carta_colocada = True
                     if jogador:
                         self._reposicionar_mao(jogador)
+                    self._registrar_movimento_arvore(
+                        tipo="play",
+                        carta=self.carta_sendo_arrastada,
+                        cor=slot.cor
+                    )
                 break
 
         if not carta_colocada:
@@ -363,6 +491,11 @@ class GameApp:
                         carta_colocada = True
                         if jogador:
                             self._reposicionar_mao(jogador)
+                        self._registrar_movimento_arvore(
+                            tipo="discard",
+                            carta=self.carta_sendo_arrastada,
+                            cor=cor
+                        )
                     break
 
         if not carta_colocada and self.posicao_original:
@@ -395,6 +528,10 @@ class GameApp:
         elif evento.key == pygame.K_SPACE:
             self.game_manager.forcar_proxima_fase()
             self.ui_manager.adicionar_mensagem_temporaria('Fase avançada!')
+        elif evento.key == pygame.K_z:
+            self._desfazer_jogada()
+        elif evento.key == pygame.K_t:
+            self._salvar_visualizacao_arvore()
 
     def _comprar_carta_descarte(self, cor) -> None:
         jogador = self.game_manager.get_jogador_atual()
@@ -404,6 +541,10 @@ class GameApp:
             self.ui_manager.adicionar_mensagem_temporaria(mensagem)
         if sucesso and carta:
             self._reposicionar_mao(jogador)
+            self._registrar_movimento_arvore(
+                tipo="draw_discard",
+                cor=cor
+            )
 
     def _comprar_carta_deck(self) -> None:
         jogador = self.game_manager.get_jogador_atual()
@@ -412,6 +553,7 @@ class GameApp:
             self.ui_manager.adicionar_mensagem_temporaria(mensagem)
         if sucesso and carta:
             self._reposicionar_mao(jogador)
+            self._registrar_movimento_arvore(tipo="draw_deck")
 
     def _processar_eventos(self) -> None:
         for evento in pygame.event.get():

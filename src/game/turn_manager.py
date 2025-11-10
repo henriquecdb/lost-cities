@@ -102,3 +102,13 @@ class TurnManager:
 
     def pular_turno(self) -> None:
         self._finalizar_turno()
+
+    def clone(self) -> "TurnManager":
+        novo = TurnManager()
+        novo.jogador_atual = self.jogador_atual
+        novo.fase_turno = self.fase_turno
+        novo.carta_jogada_neste_turno = self.carta_jogada_neste_turno
+        novo.carta_comprada_neste_turno = self.carta_comprada_neste_turno
+        novo.jogo_terminado = self.jogo_terminado
+        novo.vencedor = self.vencedor
+        return novo
