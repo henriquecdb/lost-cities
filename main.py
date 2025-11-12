@@ -3,7 +3,7 @@ from src.game.manager import GameFactory
 
 def main():
     try:
-        jogo = GameFactory.criar_jogo_padrao()
+        jogo = GameFactory.criar_jogo_padrao(seed=1)
         jogo.executar()
     except Exception as e:
         print(f"Erro inesperado: {e}")

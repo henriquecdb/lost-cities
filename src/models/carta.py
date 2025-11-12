@@ -73,3 +73,18 @@ class Carta:
             pygame.draw.rect(tela, (100, 100, 100),
                              (self.x + sombra_offset, self.y + sombra_offset,
                               self.largura, self.altura))
+
+    def clone(self) -> "Carta":
+        nova_carta = Carta(
+            numero=self.numero,
+            cor=self.cor,
+            x=self.x,
+            y=self.y,
+            tipo_carta=self.tipo_carta
+        )
+        nova_carta.largura = self.largura
+        nova_carta.altura = self.altura
+        nova_carta.sendo_arrastada = self.sendo_arrastada
+        nova_carta.offset_x = self.offset_x
+        nova_carta.offset_y = self.offset_y
+        return nova_carta

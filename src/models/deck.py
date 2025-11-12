@@ -1,11 +1,12 @@
 import random
-from typing import List, Optional
+from typing import Dict, List, Optional
 from src.models.carta import Carta
 from config.settings import Colors, GameConfig, CardConfig
 
 
 class Deck:
-    def __init__(self):
+    def __init__(self, rng: Optional[random.Random] = None):
+        self._rng = rng or random.Random()
         self.cartas: List[Carta] = []
         self._criar_deck_completo()
         self.embaralhar()
@@ -27,7 +28,7 @@ class Deck:
                 self.cartas.append(carta)
 
     def embaralhar(self) -> None:
-        random.shuffle(self.cartas)
+        self._rng.shuffle(self.cartas)
 
     def comprar_carta(self) -> Optional[Carta]:
         if self.cartas:
@@ -74,8 +75,11 @@ class DiscardPile:
 
 
 class DeckManager:
-    def __init__(self):
-        self.deck = Deck()
+    def __init__(self, seed: Optional[int] = None):
+        self._base_seed = seed
+        self._rng = random.Random(
+            seed) if seed is not None else random.Random()
+        self.deck = Deck(self._rng)
         self.montes_descarte = {}
 
         for cor in Colors.get_available_colors():
@@ -126,6 +130,37 @@ class DeckManager:
         return stats
 
     def reset_jogo(self) -> None:
+        if self._base_seed is not None:
+            self._rng.seed(self._base_seed)
         self.deck.reset()
         for monte in self.montes_descarte.values():
             monte.cartas.clear()
+
+    def set_seed(self, seed: Optional[int]) -> None:
+        self._base_seed = seed
+        self._rng = random.Random(
+            seed) if seed is not None else random.Random()
+        self.deck = Deck(self._rng)
+        for monte in self.montes_descarte.values():
+            monte.cartas.clear()
+
+    def clone(self, card_map: Dict[Carta, Carta]) -> "DeckManager":
+        novo_manager = DeckManager.__new__(DeckManager)
+        novo_manager._base_seed = self._base_seed
+        novo_manager._rng = random.Random()
+        novo_manager._rng.setstate(self._rng.getstate())
+
+        novo_manager.deck = Deck.__new__(Deck)
+        novo_manager.deck._rng = novo_manager._rng
+        novo_manager.deck.cartas = [card_map[carta]
+                                    for carta in self.deck.cartas]
+
+        novo_manager.montes_descarte = {}
+        for cor, monte in self.montes_descarte.items():
+            novo_monte = DiscardPile.__new__(DiscardPile)
+            novo_monte.cor = cor
+            novo_monte.cartas = [card_map[carta]
+                                 for carta in monte.cartas]
+            novo_manager.montes_descarte[cor] = novo_monte
+
+        return novo_manager
