@@ -5,6 +5,7 @@ from config.settings import Colors, get_hand_positions
 from src.game.manager import GameManager
 from src.game.state import GameState
 from src.models.carta import Carta
+from src.game.ai.evaluator import evaluate_state
 
 
 @dataclass(frozen=True)
@@ -28,6 +29,7 @@ class GameStateNode:
     state: GameState
     move: Optional[GameMove] = None
     mensagem: Optional[str] = None
+    score: Optional[float] = None
     parent: Optional["GameStateNode"] = None
     depth: int = 0
     children: List["GameStateNode"] = field(default_factory=list)
@@ -57,7 +59,8 @@ class GameStateTree:
             move=pending.move,
             mensagem=pending.mensagem,
             parent=self.current,
-            depth=self.current.depth + 1
+            depth=self.current.depth + 1,
+            score=evaluate_state(pending.state, pending.move.jogador)
         )
         self.current.children.append(novo_no)
         self.current = novo_no

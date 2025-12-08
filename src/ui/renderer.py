@@ -92,8 +92,8 @@ class GameRenderer:
                 texto_rect = texto.get_rect(center=area.center)
                 self.tela.blit(texto, texto_rect)
 
-    def desenhar_info_turno(self, turn_manager) -> None:
-        self.game_info_renderer.desenhar_info_turno(turn_manager)
+    def desenhar_info_turno(self, turn_manager, ai_depths=None) -> None:
+        self.game_info_renderer.desenhar_info_turno(turn_manager, ai_depths)
 
     def desenhar_info_deck(self, deck_manager) -> None:
         self.game_info_renderer.desenhar_info_deck(deck_manager)
@@ -162,7 +162,7 @@ class UIManager:
                             slots: List[SlotCarta] = None, carta_arrastada: Carta = None, pos_mouse: tuple = None,
                             turn_manager=None, deck_manager=None, areas_descarte=None,
                             slots_jogador1: List[SlotCarta] = None, slots_jogador2: List[SlotCarta] = None,
-                            cartas_mao: List[Carta] = None) -> None:
+                            cartas_mao: List[Carta] = None, ai_depths=None) -> None:
 
         if cartas_mao is not None and cartas_mao_jogador1 is None:
             cartas_mao_jogador1 = cartas_mao
@@ -198,7 +198,7 @@ class UIManager:
             self.renderer.desenhar_areas_descarte(deck_manager, areas_descarte)
 
         if turn_manager:
-            self.renderer.desenhar_info_turno(turn_manager)
+            self.renderer.desenhar_info_turno(turn_manager, ai_depths)
 
         if deck_manager:
             self.renderer.desenhar_info_deck(deck_manager)

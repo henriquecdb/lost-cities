@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Tuple
 
 from config.settings import (
+    AIConfig,
     Colors,
     DEFAULT_RANDOM_SEED,
     FPS,
@@ -20,6 +21,9 @@ from src.models.carta import Carta
 from src.models.deck import DeckManager
 from src.models.slot_carta import SlotCarta
 from src.ui.renderer import GameRenderer, UIManager
+from src.game.ai.base import AIPlayer, AIMove
+from src.game.ai.minimax import MinimaxAI
+from src.game.ai.alphabeta import AlphaBetaAI
 
 if TYPE_CHECKING:
     from src.game.state_tree import GameStateTree, GameMove
@@ -28,6 +32,20 @@ if TYPE_CHECKING:
 class GameManager:
     def __init__(self, state: GameState):
         self.state = state
+        self.ai_players: Dict[int, Optional[AIPlayer]] = {1: None, 2: None}
+
+        with open("game_log.txt", "a") as f:
+            f.write("\n\n=== New Game Session Started ===\n")
+
+    def log_move(self, player_id: int, action: str, card: Carta, details: str = ""):
+        try:
+            with open("game_log.txt", "a") as f:
+                color_name = Colors.get_color_names().get(card.cor, "Unknown")
+                card_str = f"{color_name} {card.numero if card.tipo_carta == 'numerada' else 'INV'}"
+                f.write(
+                    f"Turn {self.state.turn_manager.get_jogador_atual()} (P{player_id}): {action} {card_str} {details}\n")
+        except Exception as e:
+            print(f"Logging Error: {e}")
 
     @classmethod
     def create_default(cls, seed: Optional[int] = DEFAULT_RANDOM_SEED) -> 'GameManager':
@@ -50,6 +68,24 @@ class GameManager:
         self.state.configure_slots(colors, slot_positions)
         self._distribuir_cartas_iniciais()
         self.state.fim_jogo_processado = False
+
+    def set_player_type(self, player_id: int, type: str, depth: int = AIConfig.DEFAULT_DEPTH) -> None:
+        if type == AIConfig.PlayerType.HUMAN:
+            self.ai_players[player_id] = None
+        elif type == AIConfig.PlayerType.MINIMAX:
+            self.ai_players[player_id] = MinimaxAI(player_id, depth)
+        elif type == AIConfig.PlayerType.ALPHABETA:
+            self.ai_players[player_id] = AlphaBetaAI(player_id, depth)
+
+    def is_ai_turn(self, player_id: int) -> bool:
+        return self.ai_players[player_id] is not None
+
+    def get_ai_move(self) -> Optional[AIMove]:
+        player_id = self.get_jogador_atual()
+        ai = self.ai_players[player_id]
+        if ai:
+            return ai.get_move(self.state)
+        return None
 
     def load_state(self, new_state: GameState) -> None:
         self.state = new_state.clone()
@@ -112,12 +148,16 @@ class GameManager:
         if not self.state.turn_manager.validar_jogada_em_expedicao(carta, slot_jogador):
             return False, 'Jogada inválida! Verifique cor e ordem.'
 
-        if slot_jogador.adicionar_carta(carta):
-            slot_compartilhado.adicionar_carta(carta, jogador)
+        if slot_compartilhado.adicionar_carta(carta, jogador):
+            slot_jogador.adicionar_carta(carta, jogador)
+
             mao = self.state.get_player_hand(jogador)
             if carta in mao:
                 mao.remove(carta)
+
             self.state.turn_manager.registrar_carta_jogada(carta, 'expedicao')
+            self.log_move(jogador, "PLAY", carta,
+                          f"into {Colors.get_color_names().get(cor, 'Unknown')}")
             return True, self._mensagem_carta_jogada(carta)
 
         return False, 'Não foi possível jogar a carta.'
@@ -131,10 +171,21 @@ class GameManager:
             mao = self.state.get_player_hand(jogador)
             if carta in mao:
                 mao.remove(carta)
+
+            posicoes_descarte = get_discard_positions()
+            cores = Colors.get_available_colors()
+            try:
+                idx = cores.index(carta.cor)
+                x, y = posicoes_descarte[idx]
+                carta.mover_para(x, y)
+            except ValueError:
+                pass
+
             self.state.turn_manager.registrar_carta_jogada(carta, 'descarte')
             carta.parar_arraste()
             nomes_cores = Colors.get_color_names()
             cor_nome = nomes_cores.get(carta.cor, 'Desconhecida')
+            self.log_move(jogador, "DISCARD", carta, f"to {cor_nome}")
             return True, f'Carta descartada em {cor_nome}!'
 
         return False, 'Não é possível descartar a carta!'
@@ -154,6 +205,7 @@ class GameManager:
 
         mao.append(carta)
         self.state.turn_manager.registrar_carta_comprada('deck')
+        self.log_move(jogador, "DRAW", carta, "from DECK")
         return True, carta, 'Carta comprada do deck!'
 
     def comprar_carta_descarte(self, cor) -> Tuple[bool, Optional[Carta], str]:
@@ -174,6 +226,7 @@ class GameManager:
         mao.append(carta)
         self.state.turn_manager.registrar_carta_comprada('descarte')
         cor_nome = nomes_cores.get(cor, 'Desconhecida')
+        self.log_move(jogador, "DRAW", carta, f"from DISCARD {cor_nome}")
         return True, carta, f'Carta comprada do descarte {cor_nome}!'
 
     def checar_fim_de_jogo(self) -> Optional[str]:
@@ -265,6 +318,9 @@ class GameApp:
         self.cartas_mao_jogador2: List[Carta] = []
 
         self.state_tree: Optional["GameStateTree"] = None
+
+        self.ai_timer = 0.0
+        self.ai_depths = {1: AIConfig.DEFAULT_DEPTH, 2: AIConfig.DEFAULT_DEPTH}
 
         self._sync_state_references()
         self._inicializar_areas_descarte()
@@ -568,7 +624,46 @@ class GameApp:
             elif evento.type == pygame.KEYDOWN:
                 self._processar_evento_teclado(evento)
 
+    def _processar_turno_ia(self) -> None:
+        move = self.game_manager.get_ai_move()
+        if not move:
+            return
+
+        jogador_atual = self.game_manager.get_jogador_atual()
+        current_hand = self.game_manager.get_hand(jogador_atual)
+
+        if move.card_index >= len(current_hand):
+            return
+
+        carta = current_hand[move.card_index]
+
+        if move.action_type == 'play':
+            sucesso, msg = self.game_manager.tentar_jogar_em_expedicao(
+                carta, carta.cor)
+            if sucesso:
+                self._registrar_movimento_arvore("play", carta, carta.cor)
+        elif move.action_type == 'discard':
+            sucesso, msg = self.game_manager.tentar_descartar_carta(carta)
+            if sucesso:
+                self._registrar_movimento_arvore("discard", carta, carta.cor)
+
+        if move.draw_source == 'deck':
+            self._comprar_carta_deck()
+        elif move.draw_source == 'discard' and move.draw_color:
+            self._comprar_carta_descarte(move.draw_color)
+
     def _atualizar_logica(self) -> None:
+        current_player = self.game_manager.get_jogador_atual()
+        if self.game_manager.is_ai_turn(current_player) and not self.game_manager.state.turn_manager.jogo_terminado:
+            self.ai_timer += self.clock.get_time() / 1000.0
+            if self.ai_timer >= AIConfig.DEFAULT_DELAY:
+                self._processar_turno_ia()
+                self.ai_timer = 0
+                self._sync_state_references()
+                self._reposicionar_mao(current_player)
+        else:
+            self.ai_timer = 0
+
         for slot in self.slots:
             slot.destacar(False)
 
@@ -598,6 +693,7 @@ class GameApp:
             turn_manager=self.game_manager.get_turn_manager(),
             deck_manager=self.game_manager.get_deck_manager(),
             areas_descarte=self.areas_descarte,
+            ai_depths=self.ai_depths
         )
 
     def get_estatisticas(self) -> dict:
@@ -621,3 +717,16 @@ class GameFactory:
     def criar_jogo_padrao(seed: Optional[int] = DEFAULT_RANDOM_SEED) -> 'GameApp':
         manager = GameManager.create_default(seed=seed)
         return GameApp(manager)
+
+    @staticmethod
+    def criar_jogo_customizado(seed: int, p1_type: str, p1_depth: int, p2_type: str, p2_depth: int) -> 'GameApp':
+        manager = GameManager.create_default(seed=seed)
+
+        manager.set_player_type(1, p1_type, p1_depth)
+        manager.set_player_type(2, p2_type, p2_depth)
+
+        app = GameApp(manager)
+        app.ai_depths[1] = p1_depth
+        app.ai_depths[2] = p2_depth
+
+        return app
