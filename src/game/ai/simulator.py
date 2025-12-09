@@ -39,3 +39,25 @@ def apply_move(state: GameState, move: AIMove, player_id: int) -> GameState:
             new_state.turn_manager.registrar_carta_comprada('descarte')
 
     return new_state
+
+
+def determinize_state(state: GameState, observer_player_id: int) -> None:
+    opponent_id = 3 - observer_player_id
+
+    unknown_cards = []
+
+    unknown_cards.extend(state.deck_manager.deck.cartas)
+    state.deck_manager.deck.cartas.clear()
+
+    opponent_hand = state.players[opponent_id].hand
+    unknown_cards.extend(opponent_hand)
+    opponent_hand_size = len(opponent_hand)
+    opponent_hand.clear()
+
+    state.deck_manager._rng.shuffle(unknown_cards)
+
+    for _ in range(opponent_hand_size):
+        if unknown_cards:
+            opponent_hand.append(unknown_cards.pop())
+
+    state.deck_manager.deck.cartas.extend(unknown_cards)

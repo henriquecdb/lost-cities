@@ -2,42 +2,43 @@ from src.game.ai.base import AIPlayer, AIMove
 from src.game.state import GameState
 from src.game.ai.evaluator import evaluate_state
 from src.game.ai.move_generator import get_possible_moves
-from src.game.ai.simulator import apply_move
+from src.game.ai.simulator import apply_move, determinize_state
 
 
 class AlphaBetaAI(AIPlayer):
-    def get_move(self, state: GameState) -> AIMove:
-        simulation_state = state.clone()
-        simulation_state.deck_manager.deck.embaralhar()
+    def __init__(self, player_id: int, depth: int, simulation_runs: int = 5):
+        super().__init__(player_id, depth)
+        self.simulation_runs = max(1, simulation_runs)
 
+    def get_move(self, state: GameState) -> AIMove:
         best_score = float('-inf')
         best_move = None
-        alpha = float('-inf')
-        beta = float('inf')
 
-        moves = get_possible_moves(simulation_state, self.player_id)
+        moves = get_possible_moves(state, self.player_id)
 
         if not moves:
             return None
 
         for move in moves:
-            new_state = apply_move(simulation_state, move, self.player_id)
-            score = self.alphabeta(
-                new_state, self.depth - 1, alpha, beta, False)
-
-            if move.draw_source == 'discard':
-                score -= 50.0
-
-            if move.action_type == 'discard':
-                score -= 2.0
+            score = self._evaluate_move_with_sampling(state, move)
 
             if score > best_score:
                 best_score = score
                 best_move = move
 
-            alpha = max(alpha, score)
-
         return best_move
+
+    def _evaluate_move_with_sampling(self, root_state: GameState, move: AIMove) -> float:
+        total_score = 0.0
+
+        for _ in range(self.simulation_runs):
+            simulation_state = root_state.clone()
+            determinize_state(simulation_state, self.player_id)
+            new_state = apply_move(simulation_state, move, self.player_id)
+            total_score += self.alphabeta(
+                new_state, self.depth - 1, float('-inf'), float('inf'), False)
+
+        return total_score / self.simulation_runs
 
     def alphabeta(self, state: GameState, depth: int, alpha: float, beta: float, maximizing: bool) -> float:
         if depth == 0 or state.turn_manager.jogo_terminado:
@@ -52,12 +53,6 @@ class AlphaBetaAI(AIPlayer):
             for move in moves:
                 new_state = apply_move(state, move, self.player_id)
                 eval = self.alphabeta(new_state, depth - 1, alpha, beta, False)
-
-                if move.draw_source == 'discard':
-                    eval -= 20.0
-
-                if move.action_type == 'discard':
-                    eval -= 1.0
 
                 max_eval = max(max_eval, eval)
                 alpha = max(alpha, eval)
