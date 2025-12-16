@@ -16,7 +16,6 @@ from src.game.ai.base import AIMove
 
 
 def _execute_move(manager: GameManager, player_id: int, move: AIMove) -> bool:
-    """Replica o comportamento usado no loop principal do jogo."""
     current_hand = manager.get_hand(player_id)
     if move.card_index >= len(current_hand):
         return False
@@ -117,21 +116,6 @@ def train_q_table(
 
     agent.save_table()
     return agent
-
-
-def run_headless_match(player1: str, player2: str, depth1: int = 1, depth2: int = 1, seed: int = 1) -> str:
-    manager = GameManager.create_default(seed=seed)
-    manager.set_player_type(1, player1, depth1)
-    manager.set_player_type(2, player2, depth2)
-
-    while not manager.state.turn_manager.jogo_terminado:
-        move = manager.get_ai_move()
-        if move is None:
-            break
-        _execute_move(manager, manager.get_jogador_atual(), move)
-        manager.checar_fim_de_jogo()
-
-    return manager.checar_fim_de_jogo() or "Jogo não terminou"
 
 
 def cli() -> None:

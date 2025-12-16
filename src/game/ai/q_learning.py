@@ -13,13 +13,6 @@ DEFAULT_Q_TABLE_PATH = Path("files/q_table.json")
 
 
 class QLearningAI(AIPlayer):
-    """IA tabular simples baseada em Q-Learning.
-
-    Durante o jogo normal (não treino) ela apenas consulta a tabela
-    já treinada para escolher o movimento com maior valor esperado.
-    O processo de treino vive no módulo q_learning_trainer.py.
-    """
-
     def __init__(
         self,
         player_id: int,
@@ -37,9 +30,6 @@ class QLearningAI(AIPlayer):
         self.q_table: Dict[str, Dict[str, float]] = {}
         self._load_table()
 
-    # ------------------------------------------------------------------
-    # Tabela Q utilitária
-    # ------------------------------------------------------------------
     def _load_table(self) -> None:
         if self.table_path.exists():
             with self.table_path.open("r", encoding="utf-8") as fp:
@@ -52,13 +42,14 @@ class QLearningAI(AIPlayer):
         with self.table_path.open("w", encoding="utf-8") as fp:
             json.dump(self.q_table, fp, indent=2)
 
-    # ------------------------------------------------------------------
-    # Métodos estáticos que também serão usados no treinamento
-    # ------------------------------------------------------------------
+    # H: cartas na mão do jog
+    # P: cartas jogáveis na mão
+    # D: tamanho do deck
+    # S: pontuação atual do jog
+    # DIFF: diferença de pontuação
+    # EXP: perfil das expedições (cor:total:investimentos:maior
     @staticmethod
     def build_state_key(state, player_id: int, moves: Optional[List[AIMove]] = None) -> str:
-        """Reduz o estado a poucos números humanos."""
-
         hand_size = len(state.get_player_hand(player_id))
         moves = moves or get_possible_moves(state, player_id)
         playable_count = sum(1 for move in moves if move.action_type == "play")
@@ -119,6 +110,8 @@ class QLearningAI(AIPlayer):
     def _get_q_value(self, state_key: str, action_key: str) -> float:
         return self.q_table.get(state_key, {}).get(action_key, 0.0)
 
+    # valor novo = valor antigo + taxa_de_aprendizado ×
+    # (recompensa + desconto × melhor_valor_futuro − valor_antigo)
     def update_q_value(
         self,
         state_key: str,
@@ -134,9 +127,6 @@ class QLearningAI(AIPlayer):
         self.q_table.setdefault(state_key, {})[action_key] = updated
         return updated
 
-    # ------------------------------------------------------------------
-    # Escolha de jogadas (modo inferência)
-    # ------------------------------------------------------------------
     def get_move(self, state) -> Optional[AIMove]:
         moves = get_possible_moves(state, self.player_id)
         if not moves:
@@ -144,9 +134,6 @@ class QLearningAI(AIPlayer):
         action, _ = self.choose_action(state, moves, self.epsilon)
         return action
 
-    # ------------------------------------------------------------------
-    # Funções auxiliares para usar durante o treinamento offline
-    # ------------------------------------------------------------------
     def choose_action(
         self,
         state,

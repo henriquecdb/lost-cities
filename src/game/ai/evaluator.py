@@ -7,8 +7,6 @@ from src.game.state import GameState
 
 @dataclass(frozen=True)
 class HeuristicWeights:
-    """Pesos humanos e explícitos para cada componente do placar."""
-
     my_potential: float = 1.0
     opponent_potential: float = -0.5
     board_progress: float = 1.0
@@ -17,8 +15,6 @@ class HeuristicWeights:
 
 @dataclass(frozen=True)
 class ExpeditionWeights:
-    """Pesos usados dentro da avaliação de cada expedição."""
-
     projected_score: float = 1.0
     empty_projected_multiplier: float = 0.6
     playable_count: float = 2.0
