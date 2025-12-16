@@ -24,6 +24,7 @@ from src.ui.renderer import GameRenderer, UIManager
 from src.game.ai.base import AIPlayer, AIMove
 from src.game.ai.minimax import MinimaxAI
 from src.game.ai.alphabeta import AlphaBetaAI
+from src.game.ai.q_learning import QLearningAI
 
 if TYPE_CHECKING:
     from src.game.state_tree import GameStateTree, GameMove
@@ -76,6 +77,8 @@ class GameManager:
             self.ai_players[player_id] = MinimaxAI(player_id, depth)
         elif type == AIConfig.PlayerType.ALPHABETA:
             self.ai_players[player_id] = AlphaBetaAI(player_id, depth)
+        elif type == AIConfig.PlayerType.QLEARNING:
+            self.ai_players[player_id] = QLearningAI(player_id, depth)
 
     def is_ai_turn(self, player_id: int) -> bool:
         return self.ai_players[player_id] is not None

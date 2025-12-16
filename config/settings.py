@@ -59,6 +59,7 @@ class AIConfig:
         HUMAN = "human"
         MINIMAX = "minimax"
         ALPHABETA = "alphabeta"
+        QLEARNING = "qlearning"
 
 
 class SlotConfig:

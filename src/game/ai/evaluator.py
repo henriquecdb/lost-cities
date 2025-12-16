@@ -1,6 +1,37 @@
+from dataclasses import dataclass
 from typing import Dict, List, Tuple
+
 from config.settings import Colors
 from src.game.state import GameState
+
+
+@dataclass(frozen=True)
+class HeuristicWeights:
+    """Pesos humanos e explícitos para cada componente do placar."""
+
+    my_potential: float = 1.0
+    opponent_potential: float = -0.5
+    board_progress: float = 1.0
+    tempo_bonus: float = 0.5
+
+
+@dataclass(frozen=True)
+class ExpeditionWeights:
+    """Pesos usados dentro da avaliação de cada expedição."""
+
+    projected_score: float = 1.0
+    empty_projected_multiplier: float = 0.6
+    playable_count: float = 2.0
+    playable_sum: float = 0.3
+    investment_bonus: float = 4.0
+    backlog_penalty: float = -1.0
+    opening_bonus: float = 6.0
+    hand_pressure: float = -0.5
+    progress_bonus: float = 0.2
+
+
+WEIGHTS = HeuristicWeights()
+EXPEDITION_WEIGHTS = ExpeditionWeights()
 
 
 def evaluate_state(state: GameState, player_id: int) -> float:
@@ -8,13 +39,15 @@ def evaluate_state(state: GameState, player_id: int) -> float:
     my_heuristic, my_board_progress = _calculate_metrics(state, player_id)
     op_heuristic, op_board_progress = _calculate_metrics(state, opponent_id)
 
-    tempo_bonus = 0.5 if state.turn_manager.get_jogador_atual() == player_id else 0.0
+    tempo_flag = 1.0 if state.turn_manager.get_jogador_atual() == player_id else 0.0
 
-    score_diff = my_heuristic - (op_heuristic * 0.5)
+    score = 0.0
+    score += WEIGHTS.my_potential * my_heuristic
+    score += WEIGHTS.opponent_potential * op_heuristic
+    score += WEIGHTS.board_progress * (my_board_progress - op_board_progress)
+    score += WEIGHTS.tempo_bonus * tempo_flag
 
-    board_delta = (my_board_progress - op_board_progress) * 1.0
-
-    return float(score_diff + tempo_bonus + board_delta)
+    return float(score)
 
 
 def _calculate_metrics(state: GameState, player_id: int) -> Tuple[float, float]:
@@ -75,16 +108,28 @@ def _evaluate_expedition(slot, hand_cards: List, actual_score: int) -> float:
     if total_cartas_planejadas >= 8:
         pontuacao_projetada += 20
 
-    desenvolvimento = len(playable_numbers) * 2.0 + soma_potencial * 0.3
-    investimento_bonus = (investimentos_no_slot + playable_investments) * 4.0
-    backlog_penalty = (len(hand_numbers) - len(playable_numbers)) * 1.0
+    score = 0.0
+    projected = pontuacao_projetada * (EXPEDITION_WEIGHTS.empty_projected_multiplier
+                                       if not numeros_no_slot
+                                       else EXPEDITION_WEIGHTS.projected_score)
+    score += projected
+
+    score += len(playable_numbers) * EXPEDITION_WEIGHTS.playable_count
+    score += soma_potencial * EXPEDITION_WEIGHTS.playable_sum
+    score += (investimentos_no_slot + playable_investments) * \
+        EXPEDITION_WEIGHTS.investment_bonus
+
+    backlog = (len(hand_numbers) - len(playable_numbers)) * \
+        EXPEDITION_WEIGHTS.backlog_penalty
+    score += backlog
 
     if not numeros_no_slot:
-        abertura_bonus = 6.0 if playable_numbers else 0.0
-        mao_pressao = (len(hand_cards) -
-                       len(playable_numbers) - playable_investments) * -0.5
-        return pontuacao_projetada * 0.6 + desenvolvimento + \
-            investimento_bonus + abertura_bonus + mao_pressao
+        score += EXPEDITION_WEIGHTS.opening_bonus if playable_numbers else 0.0
+        mao_pressao = (len(hand_cards) - len(playable_numbers) -
+                       playable_investments) * EXPEDITION_WEIGHTS.hand_pressure
+        score += mao_pressao
     else:
         progresso_real = float(actual_score)
-        return pontuacao_projetada + desenvolvimento + investimento_bonus - backlog_penalty + progresso_real * 0.2
+        score += progresso_real * EXPEDITION_WEIGHTS.progress_bonus
+
+    return score
