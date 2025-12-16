@@ -1,7 +1,7 @@
 {
   "H8|P8|D4|S0|DIFF0|EXP[0:0:0:0,1:0:0:0,2:0:0:0,3:0:0:0,4:0:0:0]": {
     "play|deck|DECK|Amarela:6": -15.660949115355901,
-    "play|deck|DECK|Azul:INV": -11.499999999887786,
+    "play|deck|DECK|Azul:INV": -11.499999999904619,
     "play|deck|DECK|Vermelha:2": -22.052593641672072,
     "play|deck|DECK|Amarela:9": -16.85572903125,
     "play|deck|DECK|Verde:INV": -11.499999999430017,
@@ -81,7 +81,7 @@
   },
   "H8|P8|D4|S-40|DIFF0|EXP[0:0:0:0,1:1:1:0,2:0:0:0,3:0:0:0,4:0:0:0]": {
     "play|deck|DECK|Azul:9": -2.189999999999999,
-    "play|deck|DECK|Branca:INV": 3.499999999852548,
+    "play|deck|DECK|Branca:INV": 3.499999999874666,
     "play|deck|DECK|Vermelha:2": -3.8017499999999984,
     "play|deck|DECK|Verde:INV": 1.3505624999999999,
     "play|deck|DECK|Amarela:10": -10.267500000000002,
@@ -834,7 +834,7 @@
     "discard|deck|DECK|Vermelha:3": 0.075
   },
   "H8|P8|D4|S-40|DIFF-46|EXP[0:0:0:0,1:1:1:0,2:1:1:0,3:0:0:0,4:0:0:0]": {
-    "play|deck|DECK|Verde:INV": 2.099999999724027,
+    "play|deck|DECK|Verde:INV": 2.0999999997654233,
     "play|deck|DECK|Amarela:10": -14.817599999999999,
     "play|deck|DECK|Amarela:INV": 0.5827500000000003,
     "play|deck|DECK|Amarela:9": -3.555,
@@ -842,7 +842,7 @@
   },
   "H8|P8|D3|S-40|DIFF-96|EXP[0:0:0:0,1:1:1:0,2:1:1:0,3:1:1:0,4:0:0:0]": {
     "play|deck|DECK|Amarela:9": -4.784999999999999,
-    "play|deck|DECK|Verde:INV": -4.0999999899563235,
+    "play|deck|DECK|Verde:INV": -4.099999991462875,
     "play|deck|DECK|Amarela:6": -5.85525,
     "play|deck|DECK|Azul:9": -8.334899999999998,
     "play|deck|DECK|Vermelha:2": -6.021749999999999,
@@ -14019,5 +14019,57 @@
   "H8|P0|D0|S-28|DIFF-6|EXP[0:3:0:10,1:3:1:9,2:3:1:9,3:4:2:10,4:2:0:9]": {
     "discard|deck|DECK|Vermelha:2": -0.075,
     "discard|deck|DECK|Amarela:INV": -0.075
+  },
+  "H8|P8|D3|S-40|DIFF-98|EXP[0:0:0:0,1:1:1:0,2:1:1:0,3:2:2:0,4:0:0:0]": {
+    "play|deck|DECK|Amarela:6": -0.2699999999999996
+  },
+  "H8|P7|D3|S-40|DIFF-115|EXP[0:1:0:6,1:1:1:0,2:1:1:0,3:2:2:0,4:0:0:0]": {
+    "play|deck|DECK|Azul:7": -0.6300000000000004
+  },
+  "H8|P6|D3|S-40|DIFF-109|EXP[0:1:0:6,1:2:1:7,2:1:1:0,3:2:2:0,4:0:0:0]": {
+    "play|deck|DECK|Vermelha:2": 0.5400000000000001
+  },
+  "H8|P6|D3|S-40|DIFF-120|EXP[0:1:0:6,1:2:1:7,2:1:1:0,3:2:2:0,4:1:0:2]": {
+    "play|deck|DECK|Azul:9": 2.9999999999999987
+  },
+  "H8|P6|D2|S-40|DIFF-106|EXP[0:1:0:6,1:3:1:9,2:1:1:0,3:2:2:0,4:1:0:2]": {
+    "play|deck|DECK|Amarela:9": -0.22499999999999998
+  },
+  "H8|P5|D2|S-40|DIFF-104|EXP[0:2:0:9,1:3:1:9,2:1:1:0,3:2:2:0,4:1:0:2]": {
+    "play|deck|DECK|Verde:7": -1.769999999999999
+  },
+  "H8|P5|D2|S-40|DIFF-91|EXP[0:2:0:9,1:3:1:9,2:1:1:0,3:3:2:7,4:1:0:2]": {
+    "play|deck|DECK|Branca:4": -3.464999999999999
+  },
+  "H8|P4|D2|S-40|DIFF-68|EXP[0:2:0:9,1:3:1:9,2:2:1:4,3:3:2:7,4:1:0:2]": {
+    "play|deck|DECK|Branca:5": 0.0
+  },
+  "H8|P3|D2|S-40|DIFF-64|EXP[0:2:0:9,1:3:1:9,2:3:1:5,3:3:2:7,4:1:0:2]": {
+    "play|deck|DECK|Verde:8": 5.744999999999998
+  },
+  "H8|P3|D1|S-40|DIFF-58|EXP[0:2:0:9,1:3:1:9,2:3:1:5,3:4:2:8,4:1:0:2]": {
+    "play|deck|DECK|Amarela:10": 0.6600000000000003
+  },
+  "H8|P3|D1|S-40|DIFF-56|EXP[0:3:0:10,1:3:1:9,2:3:1:5,3:4:2:8,4:1:0:2]": {
+    "play|deck|DECK|Vermelha:3": -0.375
+  },
+  "H8|P2|D1|S-40|DIFF-63|EXP[0:3:0:10,1:3:1:9,2:3:1:5,3:4:2:8,4:2:0:3]": {
+    "play|deck|DECK|Verde:10": 0.525
+  },
+  "H8|P1|D1|S-25|DIFF-21|EXP[0:3:0:10,1:3:1:9,2:3:1:5,3:5:2:10,4:2:0:3]": {
+    "play|deck|DECK|Vermelha:4": 3.18
+  },
+  "H8|P1|D1|S-21|DIFF-27|EXP[0:3:0:10,1:3:1:9,2:3:1:5,3:5:2:10,4:3:0:4]": {
+    "play|deck|DECK|Branca:9": 0.03000000000000016
+  },
+  "H8|P0|D0|S-3|DIFF-9|EXP[0:3:0:10,1:3:1:9,2:4:1:9,3:5:2:10,4:3:0:4]": {
+    "discard|deck|DECK|Amarela:INV": 1.9799999999999995
+  },
+  "H8|P1|D0|S-3|DIFF-9|EXP[0:3:0:10,1:3:1:9,2:4:1:9,3:5:2:10,4:3:0:4]": {
+    "play|deck|DECK|Vermelha:9": -0.37499999999999944
+  },
+  "H8|P0|D0|S6|DIFF0|EXP[0:3:0:10,1:3:1:9,2:4:1:9,3:5:2:10,4:4:0:9]": {
+    "discard|deck|DECK|Azul:INV": -0.22499999999999998,
+    "discard|deck|DECK|Branca:INV": -0.075
   }
 }

@@ -165,11 +165,3 @@ class QLearningAI(AIPlayer):
             return random.choice(best_candidates)
         move = random.choice(moves)
         return move, self.build_action_key(state, move, self.player_id)
-
-    def greedy_value(self, state) -> float:
-        moves = get_possible_moves(state, self.player_id)
-        if not moves:
-            return 0.0
-        _, action_key = self.choose_action(state, moves, epsilon=0.0)
-        state_key = self.build_state_key(state, self.player_id, moves)
-        return self._get_q_value(state_key, action_key)
