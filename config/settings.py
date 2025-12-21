@@ -39,6 +39,7 @@ class Colors:
 
 class CardConfig:
     HAND_CARD_WIDTH = 60
+    HAND_CARD_SPACING = 20
     SLOT_CARD_WIDTH = 55
     SLOT_CARD_HEIGHT = 85
 
@@ -49,7 +50,16 @@ class CardConfig:
 
     INVESTMENT_CARDS_PER_COLOR = 3
 
-    HAND_CARD_SPACING = 15
+
+class AIConfig:
+    DEFAULT_DEPTH = 2
+    DEFAULT_DELAY = 0
+
+    class PlayerType:
+        HUMAN = "human"
+        MINIMAX = "minimax"
+        ALPHABETA = "alphabeta"
+        QLEARNING = "qlearning"
 
 
 class SlotConfig:

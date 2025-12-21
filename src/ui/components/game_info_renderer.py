@@ -10,7 +10,7 @@ class GameInfoRenderer:
         self.fonte_titulo = pygame.font.Font(
             None, 48)
 
-    def desenhar_info_turno(self, turn_manager) -> None:
+    def desenhar_info_turno(self, turn_manager, ai_depths=None) -> None:
         status = turn_manager.get_status_turno()
         info_y = 250
 
@@ -27,6 +27,14 @@ class GameInfoRenderer:
         fase_rect = fase_surface.get_rect(
             center=(WINDOW_WIDTH // 2, info_y + 25))
         self.tela.blit(fase_surface, fase_rect)
+
+        if ai_depths:
+            depth_text = f"Profundidade IA: J1={ai_depths[1]} | J2={ai_depths[2]}"
+            depth_surface = self.fonte_pequena.render(
+                depth_text, True, Colors.DARK_GRAY)
+            depth_rect = depth_surface.get_rect(
+                center=(WINDOW_WIDTH // 2, info_y + 45))
+            self.tela.blit(depth_surface, depth_rect)
 
         if status['jogo_terminado']:
             if status['vencedor'] == 0:

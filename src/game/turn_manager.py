@@ -4,10 +4,11 @@ from src.models.slot_carta import SlotCarta
 
 class TurnManager:
     def __init__(self):
-        self.jogador_atual = 1  # Jogador 1 sempre vai começar
-        self.fase_turno = 'jogar_carta'  # 'jogar_carta' ou 'comprar_carta'
+        self.jogador_atual = 1
+        self.fase_turno = 'jogar_carta'
         self.carta_jogada_neste_turno = False
         self.carta_comprada_neste_turno = False
+        self.cor_descartada_neste_turno = None
         self.jogo_terminado = False
         self.vencedor = None
 
@@ -42,6 +43,9 @@ class TurnManager:
             return False
 
         self.carta_jogada_neste_turno = True
+        if tipo_jogada == 'descarte':
+            self.cor_descartada_neste_turno = carta.cor
+
         self.fase_turno = 'comprar_carta'
         return True
 
@@ -56,6 +60,7 @@ class TurnManager:
     def _finalizar_turno(self) -> None:
         self.carta_jogada_neste_turno = False
         self.carta_comprada_neste_turno = False
+        self.cor_descartada_neste_turno = None
         self.fase_turno = 'jogar_carta'
 
         self.jogador_atual = 2 if self.jogador_atual == 1 else 1
@@ -109,6 +114,7 @@ class TurnManager:
         novo.fase_turno = self.fase_turno
         novo.carta_jogada_neste_turno = self.carta_jogada_neste_turno
         novo.carta_comprada_neste_turno = self.carta_comprada_neste_turno
+        novo.cor_descartada_neste_turno = self.cor_descartada_neste_turno
         novo.jogo_terminado = self.jogo_terminado
         novo.vencedor = self.vencedor
         return novo

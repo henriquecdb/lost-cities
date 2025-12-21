@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 
 from src.game.state_tree import GameStateNode, GameStateTree
+from src.game.ai.evaluator import evaluate_state
 
 
 def render_state_tree(tree: GameStateTree, output_path: Path | str) -> Path:
@@ -49,10 +50,11 @@ def render_state_tree(tree: GameStateTree, output_path: Path | str) -> Path:
     current_id = node_ids.get(id(tree.current))
     if current_id is not None and tree.current.pending_moves:
         for idx, pending in enumerate(tree.current.pending_moves):
+            score = evaluate_state(pending.state, pending.move.jogador)
             node_id = f"p{idx}"
             graph.add_node(
                 node_id,
-                label=f"{pending.move.descricao}\n(próxima)",
+                label=f"{pending.move.descricao}\nScore: {score:.1f}\n(próxima)",
                 layer=tree.current.depth + 1,
                 status="pending",
             )
@@ -71,7 +73,7 @@ def render_state_tree(tree: GameStateTree, output_path: Path | str) -> Path:
 
     destino = Path(output_path)
     destino.parent.mkdir(parents=True, exist_ok=True)
-    figura.savefig(destino, dpi=220, bbox_inches='tight')
+    figura.savefig(destino, dpi=100, bbox_inches='tight')
     plt.close(figura)
     return destino
 
@@ -83,6 +85,21 @@ def _build_node_label(node: GameStateNode) -> str:
     jogador = status_turno.get("jogador_atual")
 
     linhas = [f"{descricao}", f"J{jogador} - {fase}"]
+
+    if node.score is not None:
+        linhas.append(f"Heurística: {node.score:.1f}")
+
+    if node.children and node.score is not None:
+        scores_filhos = [
+            child.score for child in node.children if child.score is not None]
+        if scores_filhos:
+            max_score = max(scores_filhos)
+            min_score = min(scores_filhos)
+            if abs(node.score - max_score) < 0.001:
+                linhas.append("(MAX)")
+            elif abs(node.score - min_score) < 0.001:
+                linhas.append("(MIN)")
+
     if node.mensagem:
         linhas.append(node.mensagem)
     if node.state.turn_manager.jogo_terminado:
@@ -134,10 +151,10 @@ def _fallback_vertical_layout(graph: nx.DiGraph) -> Dict[str, tuple[float, float
 
 def _draw_nodes(graph: nx.DiGraph, pos: Dict[str, tuple[float, float]]) -> None:
     palettes = {
-        "visited": {"color": "#90caf9", "size": 1600, "shape": "o"},
-        "current": {"color": "#ffcc80", "size": 1800, "shape": "o"},
-        "finished": {"color": "#f48fb1", "size": 1700, "shape": "o"},
-        "pending": {"color": "#c5e1a5", "size": 1500, "shape": "s"},
+        "visited": {"color": "#90caf9", "size": 800, "shape": "o"},
+        "current": {"color": "#ffcc80", "size": 1000, "shape": "o"},
+        "finished": {"color": "#f48fb1", "size": 900, "shape": "o"},
+        "pending": {"color": "#c5e1a5", "size": 700, "shape": "s"},
     }
 
     for status, style in palettes.items():
@@ -151,7 +168,7 @@ def _draw_nodes(graph: nx.DiGraph, pos: Dict[str, tuple[float, float]]) -> None:
                 node_color=style["color"],
                 node_size=style["size"],
                 node_shape=style["shape"],
-                linewidths=1.2,
+                linewidths=1.0,
                 edgecolors="#37474f",
             )
 
@@ -192,10 +209,11 @@ def _draw_labels(graph: nx.DiGraph, pos: Dict[str, tuple[float, float]]) -> None
     labels = {node: data.get("label", "")
               for node, data in graph.nodes(data=True)}
     nx.draw_networkx_labels(graph, pos, labels=labels,
-                            font_size=8, font_weight='bold')
+                            font_size=6, font_weight='bold')
 
 
 def _suggest_figsize(num_nodes: int, depth: int) -> tuple[float, float]:
-    largura = max(8.0, min(20.0, num_nodes * 1.2))
-    altura = max(6.0, min(16.0, (depth + 2) * 2.0))
+    largura = max(10.0, min(40.0, num_nodes * 0.8))
+    altura = max(6.0, (depth + 2) * 1.2)
+
     return largura, altura
